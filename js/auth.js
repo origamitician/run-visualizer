@@ -2,6 +2,23 @@
 var allActivities = []; // actual, dynamically changing activities list upon filtering.
 const allActivitiesRef = []; // FIXED activities list. All lifetime activities are stored in here so that no unneccessary API calls are made.
 
+const allAnalysisVariables = [
+    "distance", 
+    "pace", 
+    "maxPace", 
+    "time", 
+    "elapsedTime", 
+    "uptime", 
+    "elevation", 
+    "incline", 
+    "kudos", 
+    "cadence", 
+    "totalSteps", 
+    "stepsPerMile", 
+    "strideLength"]
+
+const allValuesSorted = {}
+
 const randomSubtitles = [
     "Follow me on Strava - @infigral",
     "As you can tell I'm addicted to gradients.",
@@ -109,6 +126,18 @@ function changeDates(){
         })
 
         if (allActivities.length !== 0) {
+           allAnalysisVariables.forEach((v) => {
+                const arrayToSort = []
+                allActivities.forEach((act) => {
+                    if (act[v] != null) {
+                        arrayToSort.push(Number(act[v]))
+                    }
+                })
+
+                arrayToSort.sort((a, b) => a - b)
+                allValuesSorted[v] = arrayToSort
+            })
+
             createSummaryPage();
             renderGraph();
             renderScatterplot(allActivities, document.getElementsByName('variable1')[0].value, document.getElementsByName('variable2')[0].value, null, [1, 2])
@@ -140,13 +169,13 @@ if (indexOfAuthorization == -1) {
         .then((response) => response.json()).then((data) => {
             data.forEach(d => {
                 let item = {...d}
-                item.distance /= 1609
+                item.distance /= 1609.344
                 item.elevation *= 3.28;
                 item.incline = parseFloat(((item.elevation / (item.distance * 5280))*100).toFixed(3))
-                item.pace = 1609 / item.pace;
+                item.pace = 1609.344 / item.pace;
                 item.uptime = parseFloat(((item.time / item.elapsedTime)*100).toFixed(2))
                 if (item.maxPace) {
-                    item.maxPace = 1609 / item.maxPace;
+                    item.maxPace = 1609.344 / item.maxPace;
                 } else {
                     item.maxPace = null;
                 }
@@ -170,6 +199,20 @@ if (indexOfAuthorization == -1) {
             document.getElementById("applicationBody").style.display = "block";
             document.getElementById("randomSubTitle").innerHTML = randomSubtitles[Math.floor(Math.random()*randomSubtitles.length)]
             if (allActivities.length !== 0) {
+                allAnalysisVariables.forEach((v) => {
+                    const arrayToSort = []
+                    allActivities.forEach((act) => {
+                        if (act[v] != null) {
+                            arrayToSort.push(Number(act[v]))
+                        }
+                    })
+
+                    arrayToSort.sort((a, b) => a - b)
+                    allValuesSorted[v] = arrayToSort
+                })
+
+                console.log(allValuesSorted)
+
                 createSummaryPage();
                 renderGraph(); //histograms
                 renderScatterplot(allActivities, 'distance', 'pace', null, [1, 2]); //scatterplot
@@ -177,7 +220,6 @@ if (indexOfAuthorization == -1) {
                 runAnalysis();
             } 
             
-
             document.getElementById("displayNumRuns").innerHTML = "Displaying <b>" + allActivities.length + "</b> runs from (timestamp " + startDate + " to " + endDate + ")"
             document.getElementById('applicationBody').style.display = 'block';
             document.getElementById('applicationMenu').style.display = 'block';

@@ -12,7 +12,7 @@ console.log(listOfNames);
 
 function runKudoAnalysis() {
     const minIndex = 0;
-    const maxIndex = 116;
+    const maxIndex = allActivities.length;
     console.log('running kudo analysis')
     const numberOfFragments = Math.ceil(allActivities.length / fragmentLength);
     fetch(`https://www.strava.com/api/v3/oauth/token?client_id=107318&client_secret=1bac185421708876ddd639fcef0a319d5896d3b1&refresh_token=48f138733218bdd7c10c586c704b8f104a5221f2&grant_type=refresh_token`, {
@@ -116,7 +116,7 @@ function combine() {
         }
     } */
 
-        const combined = [{name:"Nicolas A.",totalKudos:43},{name:"Crishelle I.",totalKudos:78},{name:"Isaac P.",totalKudos:90},{name:"Jullien B.",totalKudos:22},{name:"George L.",totalKudos:111},{name:"Izzy L.",totalKudos:70},{name:"Brennan Y.",totalKudos:3},{name:"Theresa L.",totalKudos:1},{name:"Malachi C.",totalKudos:33},{name:"Abraham P.",totalKudos:36},{name:"Peter L.",totalKudos:30},{name:"Andrew M.",totalKudos:10},{name:"Laurynn A.",totalKudos:57},{name:"Ana N.",totalKudos:28},{name:"Matt C.",totalKudos:8},{name:"Dot C.",totalKudos:39},{name:"Charlotte D.",totalKudos:36},{name:"Matthew C.",totalKudos:16},{name:"Josh T.",totalKudos:5},{name:"Mac R.",totalKudos:13},{name:"Matt L.",totalKudos:2},{name:"Gavin K.",totalKudos:5},{name:"Christian K.",totalKudos:1},{name:"Conor U.",totalKudos:36},{name:"Lucy T.",totalKudos:20},{name:"William R.",totalKudos:9},{name:"Nik K.",totalKudos:24},{name:"Tai W.",totalKudos:72},{name:"James H.",totalKudos:76},{name:"Ashten A.",totalKudos:10},{name:"Austin C.",totalKudos:3},{name:"Chris C.",totalKudos:10},{name:"Myndee D.",totalKudos:4},{name:"John M.",totalKudos:47},{name:"Macyann M.",totalKudos:13},{name:"Ethan K.",totalKudos:45},{name:"Micah K.",totalKudos:2},{name:"jonathan F.",totalKudos:4},{name:"jasmine G.",totalKudos:39},{name:"Michael D.",totalKudos:8},{name:"Josh S.",totalKudos:25},{name:"Brandon R.",totalKudos:2},{name:"Andrea M.",totalKudos:4},{name:"Albert J.",totalKudos:5},{name:"Jai C.",totalKudos:2},{name:"Jacob M.",totalKudos:8},{name:"Brock S.",totalKudos:12},{name:"Marcus R.",totalKudos:4},{name:"Carter B.",totalKudos:2},{name:"Rasil M.",totalKudos:1},{name:"Ariana M.",totalKudos:1},{name:"Tomas S.",totalKudos:1},{name:"Boozy T.",totalKudos:1},{name:"Jesse W.",totalKudos:1},{name:"Alex G.",totalKudos:1},{name:"Andre K.",totalKudos:1},{name:"Sal  C.",totalKudos:1},{name:"Cory S.",totalKudos:1},{name:"Micah W.",totalKudos:1},{name:"Dr. Alyx B.",totalKudos:1}]
+        const combined = [{name:"tony S.",totalKudos:78},{name:"Sara M.",totalKudos:62},{name:"Alex D.",totalKudos:45},{name:"Lucy T.",totalKudos:21},{name:"Suzanne N.",totalKudos:57},{name:"John McCann (.",totalKudos:72},{name:"James H.",totalKudos:80},{name:"Johnny J.",totalKudos:38},{name:"Dot C.",totalKudos:6},{name:"Crishelle I.",totalKudos:73},{name:"Rasil M.",totalKudos:69},{name:"Malachi C.",totalKudos:61},{name:"George L.",totalKudos:72},{name:"noah L.",totalKudos:1},{name:"Aaron B.",totalKudos:34},{name:"Isaac P.",totalKudos:49},{name:"Ken Y.",totalKudos:6},{name:"Iván Pedro R.",totalKudos:3},{name:"Peter L.",totalKudos:58},{name:"Carlene B.",totalKudos:32},{name:"Jenna B.",totalKudos:28},{name:"Ian T.",totalKudos:58},{name:"Austin C.",totalKudos:6},{name:"Macyann M.",totalKudos:53},{name:"Michael D.",totalKudos:63},{name:"Chris C.",totalKudos:12},{name:"Chester L.",totalKudos:3},{name:"Matthew C.",totalKudos:24},{name:"Nicolas A.",totalKudos:6},{name:"Izzy L.",totalKudos:26},{name:"Jasmine G.",totalKudos:21},{name:"Josh S.",totalKudos:9},{name:"Ana N.",totalKudos:31},{name:"Myndee D.",totalKudos:26},{name:"Conor U.",totalKudos:5},{name:"Gavin K.",totalKudos:6},{name:"Ashten A.",totalKudos:10},{name:"Abraham P.",totalKudos:14},{name:"Jacob M.",totalKudos:5},{name:"Micah W.",totalKudos:17},{name:"Bojan T.",totalKudos:3},{name:"Black Mamba H.",totalKudos:4},{name:"fred C.",totalKudos:35},{name:"Theresa L.",totalKudos:9},{name:"Ethan K.",totalKudos:17},{name:"Keahi J.",totalKudos:24},{name:"Jeff C.",totalKudos:1},{name:"Trey R.",totalKudos:26},{name:"Micah K.",totalKudos:2},{name:"Telmen L.",totalKudos:4},{name:"Evan L.",totalKudos:5},{name:"Laurynn A.",totalKudos:13},{name:"Dalan K.",totalKudos:1},{name:"mike I.",totalKudos:17},{name:"Michael C.",totalKudos:6},{name:"Travis S.",totalKudos:1},{name:"Matt C.",totalKudos:7},{name:"Nathan F.",totalKudos:1},{name:"Ian F.",totalKudos:5},{name:"Mac R.",totalKudos:1},{name:"Naomi J.",totalKudos:3},{name:"Ian W.",totalKudos:2},{name:"Duane T.",totalKudos:5},{name:"Charlotte D.",totalKudos:8},{name:"Tai W.",totalKudos:2},{name:"Kanika S.",totalKudos:1},{name:"William R.",totalKudos:1},{name:"Brock S.",totalKudos:2},{name:"Carter B.",totalKudos:1},{name:"Jai C.",totalKudos:1},{name:"Matt L.",totalKudos:1}]
 
     // sort allActivities by date.
     for (let i = 1; i < combined.length; i++) {
@@ -130,7 +130,7 @@ function combine() {
         combined[lastIndex + 1] = currentElement;
     }
 
-    console.log(JSON.stringify(combined));
+    //console.log(JSON.stringify(combined));
 
     const graphColors = ['cornflowerblue', '#fc9003', 'purple', '#3bbf53', '#d12828', 'darkgreen', 'maroon', 'darkblue', 'seagreen', 'gray']
     const maxValue = 190;

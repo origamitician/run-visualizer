@@ -1,8 +1,8 @@
 body{
     /*font-family: 'Roboto slab', sans-serif;*/
-    /*font-family: 'Nunito', sans-serif; */
+    font-family: 'Nunito', sans-serif;
     /*font-family: 'National Park', sans-serif;*/
-    font-family: 'Wix MadeFor Display', sans-serif; 
+    /*font-family: 'Wix MadeFor Display', sans-serif; */
     /*font-family: 'Inter', sans-serif;*/
     font-size: 100%;
     overflow-x: hidden;
@@ -352,7 +352,6 @@ body{
     display: none;
     z-index: 999;
     background-color: white;
-    
     -webkit-user-select: none;
     font-weight: bold;
 }
@@ -386,108 +385,112 @@ body{
     text-align: center;
 }
 
-.runLookupDivMainText b {
-    font-size: 225%;
-    
-}
-
-.runLookupDivMainText span {
-    font-size: 100%;
-}
-
-.runLookupDivMainText {
-    margin-bottom: 1%;
-}
-
-.indivRunLookupDiv {
-    width: 45%;
-    margin: 0% 2.5% 1% 2.5%;
-    display: inline-block;
-}
-
-#runLookupDiv {
-    position: fixed;
-    display: none;
-    overflow-y: scroll;
-    border: 2px solid black;
-    width: 50%;
-    background-color: white;
-    z-index: 999;
-    height:  80vh;
-    transform: translate(-50%, -50%);
-    top: 50vh;
-    left: 50vw;
-    padding: 0% 0% 1% 0%;
+.histSummaryCell {
     box-sizing: border-box;
-    box-shadow: 5px 5px 10px grey;
+    border: 1px dotted grey;
+    text-align: center;
+    /*display: inline-block;*/
 }
 
-.runLookupSpectrum {
-    height: 3vh;
-    border: 1px solid black;
+#curr_distribution_info {
     width: 100%;
-    position: relative;
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    height: 65vh;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    box-sizing: border-box;
+    border: 3px solid black;
+} 
+
+.histSummaryVariableDisplay {
+    font-size: 100%;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    margin-top: 3%;
+    margin-bottom: 3%;
 }
 
-.runLookupSpectrumBar {
+.histSummaryVariableValue {
+    font-size: 200%;
+    margin-top: 2.5%;
+    margin-bottom: 4%;
+}
+
+.histSummaryVariableValue span {
+    font-size: 40%;
+}
+
+.histSummarySpectrum {
+    border: 1px solid black;
+    width: 80%;
+    height: 2.5vh;
+    position: relative;
+    margin: 0 10% 0 10%;
+}
+
+.histSummarySpectrumBar {
+    height: 2.5vh;
     width: 3%;
-    height: 3vh;
-    border-radius: 100px;
     background-color: white;
     border: 1px solid black;
-    position: absolute;
-    transform: translate(-50%, 0%);
+    border-radius: 5px;
     box-sizing: border-box;
-
 }
 
-#runLookupStravaLink {
-    display: block;
-    margin: 0;
-    font-size: 95%;
-    color: orange;
+.histSummaryRangeBar {
+    height: 2.5vh;
+    background-color: orange;
+    border-radius: 1.25vh;
+    opacity: 0.8;
+    border: 1px solid black;
+    box-sizing: border-box;
 }
 
-#runLookupDivFlex {
-    display: flex;
-    position: sticky;
-    top: 0;
-    border-bottom: 1px solid grey;
-    background-color: white;
-    z-index: 1000;
-}
-
-#runLookupDivContainer {
-    display: relative;
-}
-
-#runLookupDivLeft {
-    margin-left: 2.5%;
-    margin-top: 2.5%;
-    margin-bottom: 2.5%;
+.histBarUnder {
+    /*display: flex;
+    justify-content: space-between;*/
+    position: relative;
     width: 80%;
+    margin: 0 10% 0 10%;
+    height: 2.5vh;
 }
 
-#runLookupDivTitle {
-    margin-top:0;
-    margin-bottom: 1%;
+.histBarLeftValue {
+    position: absolute;
+    font-size: 75%;
+    max-width: 25%;
+    padding: 0 1% 0 1%;
+    text-align: center;
+    margin-top: 0.5%;
+    transform: translate(-50%);
+    background-color: orange;
+    color: black;
+    border: 1px solid black;
+    opacity: 0.8;
 }
 
-#runLookupDivFlex button {
-    margin-right: 2.5%;
-    width: 10%;
-    margin-left: 5%;
-    padding-top: 1%;
-    padding-bottom:1%;
-    margin-top: auto;
-    margin-bottom: auto;
-    font-size: 125%;
+.histBarRightValue {
+    position: absolute;
+    max-width: 25%;
+    padding: 0 1% 0 1%;
+    border: 1px solid black;
+    font-size: 75%;
+    text-align: center;
+    margin-top: 0.5%;
+    
+    transform: translate(-50%);
+    color: black;
+    background-color: orange;
+    opacity: 0.8;
 }
 
-#runLookupDivFlex button:hover {
-    cursor: pointer;
+.histSummaryTotal {
+    width: 90%;
+    font-size: 85%;
+    opacity: 0.8;
+    margin: 1% 5% 3% 5%;
 }
-
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -903,33 +906,6 @@ input::-webkit-inner-spin-button {
     body{
         overflow-x: hidden;
         font-size: 100%;
-    }
-
-    #runLookupDiv {
-        width: 90vw;
-        overflow-x: hidden;
-        height:  75vh;
-    }
-
-    .indivRunLookupDiv {
-        width: 90%;
-        margin: 1% 5% 1% 5%;
-    }
-
-    .runLookupDivMainText b {
-        font-size: 5.5vw
-    }
-    
-    .runLookupDivMainText span {
-        font-size: 3.75vw
-    }
-
-    .runLookupDivTitle {
-        font-size: 5vw;
-    }
-
-    .runLookupDivRank {
-        font-size: 3vw;
     }
 
     .mainDiv, #histogramDiv, #summaryDiv, #scatterDiv {

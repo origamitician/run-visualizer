@@ -7,20 +7,44 @@ let scrub;
 let defaultClr1 = "#1688b5"
 let defaultClr2 = "#6e2aad"
 scrub = {
-    pace: {unit: "seconds/mi", abbrUnit: "/mi", roundTo: 5, decimalPlaces: 2, title: "Pace"},
-    maxPace: {unit: "seconds/mi", abbrUnit: "/mi", roundTo: 5, decimalPlaces: 2, title: "Pace"},
-    uptime: {unit: "%", abbrUnit: "%", roundTo: 0.5, title: "Uptime", decimalPlaces: 2, ceiling: 100},
-    distance: {unit: "miles", abbrUnit: "mi", roundTo: 1, decimalPlaces: 3, title: "Distance"},
-    elevation: {unit: "feet", abbrUnit: "ft", roundTo: 5, decimalPlaces: 2, title: "Elevation"},
-    time: {unit: "", abbrUnit: "", roundTo: 60, decimalPlaces: 0, title: "Moving Time"},
-    elapsedTime: {unit: "", abbrUnit: "", roundTo: 60, decimalPlaces: 0, title: "Elapsed Time"},
-    incline: {unit: "", abbrUnit: "%", roundTo: 0.05, decimalPlaces: 3, title: "Incline"},
-    kudos: {unit: "", abbrUnit: "", roundTo: 1, decimalPlaces: 0, title: "Kudos"},
-    cadence: {unit: "steps/min", abbrUnit: "spm", roundTo: 0.25, decimalPlaces: 2, title: "Cadence"},
-    totalSteps: {unit: "steps", abbrUnit: "", roundTo: 1000, decimalPlaces: 0, title: "Steps"},
-    stepsPerMile: {unit: "steps/mile", abbrUnit: "", roundTo: 10, decimalPlaces: 0, title: "Steps per Mile"},
-    strideLength: {unit: "ft", abbrUnit: "ft", roundTo: 0.05, decimalPlaces: 3, title: "Stride Length"},
+    distance: {unit: "miles", abbrUnit: "mi", roundTo: 1, decimalPlaces: 2, title: "Distance", summable: true},
+
+    pace: {unit: "seconds/mi", abbrUnit: "/mi", roundTo: 5, decimalPlaces: 2, title: "Pace", dividendVar: "time", divisorVar: "distance"},
+
+    maxPace: {unit: "seconds/mi", abbrUnit: "/mi", roundTo: 5, decimalPlaces: 2, title: "Pace", dividendVar: "time", divisorVar: "distance"},
+
+    time: {unit: "", abbrUnit: "", roundTo: 60, decimalPlaces: 0, title: "Moving Time", summable: true},
+
+    elapsedTime: {unit: "", abbrUnit: "", roundTo: 60, decimalPlaces: 0, title: "Elapsed Time", summable: true},
+
+    uptime: {unit: "%", abbrUnit: "%", roundTo: 0.5, title: "Uptime", decimalPlaces: 2, ceiling: 100, dividentVar: "time", divisorVar: "elapsedTime"},
+
+    elevation: {unit: "feet", abbrUnit: "ft", roundTo: 5, decimalPlaces: 2, title: "Elevation", summable: true},
+
+    incline: {unit: "", abbrUnit: "%", roundTo: 0.05, decimalPlaces: 3, title: "Incline", divisorVar: "elevation", dividendVar: "distance"},
+
+    kudos: {unit: "", abbrUnit: "", roundTo: 1, decimalPlaces: 0, title: "Kudos", summable: true},
+
+    cadence: {unit: "steps/min", abbrUnit: "spm", roundTo: 0.25, decimalPlaces: 2, title: "Cadence", divisorVar: "totalSteps", dividendVar: "time"},
+
+    totalSteps: {unit: "steps", abbrUnit: "", roundTo: 1000, decimalPlaces: 0, title: "Steps", summable: true},
+    
+    stepsPerMile: {unit: "steps/mile", abbrUnit: "", roundTo: 10, decimalPlaces: 0, title: "Steps per Mile", divisorVar: "totalSteps", dividendVar: "distance"},
+
+    strideLength: {unit: "ft", abbrUnit: "ft", roundTo: 0.05, decimalPlaces: 3, title: "Stride Length", divisorVar: "distance", dividendVar: "totalSteps"},
 }
+
+const summableUnits = []
+const nonSummableUnits = []
+const runningTotals = {}
+Object.keys(scrub).forEach(key => {
+    if (scrub[key].summable) {
+        summableUnits.push(key)
+        runningTotals[key] = 0
+    } else {
+        nonSummableUnits.push(key)
+    }
+})
 
 Object.keys(scrub).forEach(key => {
     scrub[key].color = defaultClr1
@@ -86,27 +110,35 @@ function updateDefaultStatistics(index, inputObject){
     // console.log("From updatedefaultstats: " + curr_distribution)
     // console.log("From updatedefaultstats: index is = " + index)
     curr_distribution[index].count++;
-    curr_distribution[index].total_elevation_gain+=inputObject.elevation
-    curr_distribution[index].total_miles+=inputObject.distance;
-    curr_distribution[index].total_time+=inputObject.time;
-    curr_distribution[index].total_elapsed_time+=inputObject.elapsedTime;
     curr_distribution[index].list_of_activities.push(inputObject);
 
-    if(inputObject.elevation > curr_distribution[index].most_elevation_gain){
-        curr_distribution[index].most_elevation_gain = inputObject.elevation;
-    }
+    summableUnits.forEach((unit) => {
+        curr_distribution[index][unit + "_breakdown"].total += inputObject[unit]
+        runningTotals[unit] += inputObject[unit]
 
-    if (inputObject.elevation < curr_distribution[index].least_elevation_gain){
-        curr_distribution[index].least_elevation_gain = inputObject.elevation;
-    }
+        if(inputObject[unit] > curr_distribution[index][unit + "_breakdown"].high && inputObject[unit] != null){
+            curr_distribution[index][unit + "_breakdown"].high = inputObject[unit];
+        }
+        if(inputObject[unit] < curr_distribution[index][unit + "_breakdown"].low && inputObject[unit] != null){
+            curr_distribution[index][unit + "_breakdown"].low = inputObject[unit];
+        }
+    })
 
-    if(inputObject.distance> curr_distribution[index].most_miles){
-        curr_distribution[index].most_miles = inputObject.distance
-    }
+    nonSummableUnits.forEach((unit) => {
+        weightUnit = scrub[unit].divisorVar
+        if (inputObject[unit] == 0 || inputObject[unit] != null) {
+            curr_distribution[index][unit + "_breakdown"].weight += inputObject[weightUnit]
+            curr_distribution[index][unit + "_breakdown"].weightedTotal += inputObject[weightUnit] * inputObject[unit] 
 
-    if(inputObject.distance < curr_distribution[index].least_miles){
-        curr_distribution[index].least_miles = inputObject.distance
-    }
+            if(inputObject[unit] > curr_distribution[index][unit + "_breakdown"].high){
+                curr_distribution[index][unit + "_breakdown"].high = inputObject[unit];
+            }
+
+            if(inputObject[unit] < curr_distribution[index][unit + "_breakdown"].low){
+                curr_distribution[index][unit + "_breakdown"].low = inputObject[unit];
+            }
+        } 
+    })
 }
 
 function showMoreStats(){
@@ -126,7 +158,7 @@ function showMoreStats(){
     let span2 = document.getElementById("curr_distribution_counter").getElementsByTagName("span")[1]
     let span3 = document.getElementById("curr_distribution_counter").getElementsByTagName("span")[2]
 
-    span1.innerHTML = curr_distribution[processed[0]].count;
+    span1.innerHTML = `${curr_distribution[processed[0]].count} (${((curr_distribution[processed[0]].count / allActivities.length)*100).toFixed(2)}%)`;
     span1.style.color = processed[2];
     span1.parentElement.style.borderLeft = "5px solid " + processed[2];
     span1.style.fontWeight = "bold";
@@ -145,22 +177,170 @@ function disableStats(){
     document.getElementById(processed[1] + "_info").innerHTML = "Hover over graph to show more details!"
 }
 
-function showStatsOnHTML(id, color, varToHighlight){
-    var convertedMileTime = convert(curr_distribution[id].total_time / curr_distribution[id].total_miles, 2)
-    var convertedKmTime = convert((curr_distribution[id].total_time / curr_distribution[id].total_miles) / 1.609, 2)
-    //console.log(convertedMileTime)
-    //console.log(convertedKmTime);
-    try{
-        document.getElementById("curr_distribution_info").innerHTML = "<b> Average pace: </b>" + convertedMileTime + "/mi (" + convertedKmTime +  "/km) <br><br>" +
-
-        "<b> Average distance: </b>" + (curr_distribution[id].total_miles / curr_distribution[id].count).toFixed(3) + " mi <br> (shortest " + curr_distribution[id].least_miles.toFixed(3) + " mi; longest " + curr_distribution[id].most_miles.toFixed(3) + " mi) <br><br>" + 
-
-        "<b> Average elev gain: </b>" +  (curr_distribution[id].total_elevation_gain / curr_distribution[id].count).toFixed(2) + " ft <br>(highest " + curr_distribution[id].most_elevation_gain.toFixed(2) + " ft) <br><br>" + 
-
-        "<b> Average % uptime: </b>" + ((curr_distribution[id].total_time / curr_distribution[id].total_elapsed_time)*100).toFixed(2) + " %"
-    }catch{
-        //do nothing here since its buggy
+function createHistSummaryCell(unit, id, isSummable) {
+    // console.log("isSummable is: " + isSummable)
+    const numDecimals = scrub[unit].decimalPlaces
+    const unitCell = document.createElement("div")
+    unitCell.className = "histSummaryCell"
+    let computedAvg = null
+    const sortedRef = allValuesSorted[unit]
+    
+    if (isSummable) {
+        computedAvg = curr_distribution[id][unit + "_breakdown"].total / curr_distribution[id].count
+    } else {
+        computedAvg = curr_distribution[id][unit + "_breakdown"].weightedTotal / curr_distribution[id][unit + "_breakdown"].weight
     }
+
+    /*
+    let ind = 0;
+    while (ind < sortedRef.length && computedAvg >= sortedRef[ind]) {
+        ind+=1
+    }*/
+
+    
+    let computedMedian = null
+    const high = curr_distribution[id][unit + "_breakdown"].high
+    const low = curr_distribution[id][unit + "_breakdown"].low
+    const percentile1 = sortedRef[Math.floor(0.01*sortedRef.length)]
+    const percentile99 = sortedRef[Math.floor(0.99*sortedRef.length)]
+    const high_location = ((high - percentile1) / (percentile99 - percentile1))*100
+    const low_location = ((low - percentile1) / (percentile99 - percentile1))*100
+    const avg_location = ((computedAvg - percentile1) / (percentile99 - percentile1))*100
+
+    // compute the median by sorting all activities in order
+
+    const arrayForMedianCalc = []
+
+    curr_distribution[id].list_of_activities.forEach((activity) => {
+        if (activity[unit] != null) {
+            arrayForMedianCalc.push(activity[unit])
+        }
+    })
+
+    for (let i = 1; i < arrayForMedianCalc.length; i++) {
+    let currentElement = arrayForMedianCalc[i];
+    let lastIndex = i - 1;
+
+    while (lastIndex >= 0 && arrayForMedianCalc[lastIndex] > currentElement) {
+        arrayForMedianCalc[lastIndex + 1] = arrayForMedianCalc[lastIndex];
+        lastIndex--;
+    }
+        arrayForMedianCalc[lastIndex + 1] = currentElement;
+    }
+
+    // console.log(arrayForMedianCalc)
+
+    if (arrayForMedianCalc.length % 2 == 1) {
+        computedMedian = arrayForMedianCalc[Math.floor(arrayForMedianCalc.length / 2)]
+    } else {
+        computedMedian = (arrayForMedianCalc[(arrayForMedianCalc.length / 2) - 1] + arrayForMedianCalc[(arrayForMedianCalc.length / 2)]) / 2
+    }
+
+    // create the items
+
+    const barVariableTitle = document.createElement("p")
+    barVariableTitle.className = "histSummaryVariableDisplay"
+    barVariableTitle.innerHTML = `Avg ${scrub[unit].title}`
+
+    const barVariableValue = document.createElement("p")
+    barVariableValue.className = "histSummaryVariableValue"
+    if (unit == "time" || unit == "elapsedTime") {
+        barVariableValue.innerHTML = `${convert(computedAvg)}`
+    } else if (unit == "pace"|| unit == "maxPace") {
+        barVariableValue.innerHTML = `${convert(computedAvg, 2)}<span> /mi<span>`
+    } else {
+        barVariableValue.innerHTML = `${computedAvg.toFixed(numDecimals)}<span> ${scrub[unit].abbrUnit}</span>`
+    }
+    
+    unitCell.appendChild(barVariableTitle)
+    unitCell.appendChild(barVariableValue)
+
+    // create the bar
+
+    const underBar = document.createElement('div');
+    underBar.className = 'histBarUnder'
+
+    const underBarLeft = document.createElement('p');
+    underBarLeft.className = 'histBarLeftValue';
+    if (unit == "time" || unit == "elapsedTime") {
+        underBarLeft.innerHTML = `${convert(low)}`
+    } else if (unit == "pace"|| unit == "maxPace") {
+        underBarLeft.innerHTML = `${convert(low, 2)}`
+    } else {
+        underBarLeft.innerHTML = `${low.toFixed(numDecimals)}`
+    }
+    underBarLeft.style.left = low_location + "%";
+    
+    underBar.appendChild(underBarLeft);
+
+    const underBarRight = document.createElement('p');
+    underBarRight.className = 'histBarRightValue';
+    if (unit == "time" || unit == "elapsedTime") {
+        underBarRight.innerHTML = `${convert(high)}`
+    } else if (unit == "pace"|| unit == "maxPace") {
+        underBarRight.innerHTML = `${convert(high, 2)}`
+    } else {
+        underBarRight.innerHTML = `${high.toFixed(numDecimals)}`
+    }
+    underBarRight.style.left = high_location + "%";
+    underBar.appendChild(underBarRight);
+
+    /*const underBarMedian = document.createElement('p');
+    underBarMedian.className = 'histBarMedianValue';
+    underBarMedian.innerHTML = `Median: ${computedMedian.toFixed(numDecimals)}${scrub[unit].abbrUnit}`
+    underBarMedian.left = (((computedMedian - low) / (high - low))*100) + "%";
+    underBar.appendChild(underBarMedian);*/
+
+    // create spectrum
+    const spectrum = document.createElement('div');
+    spectrum.className = 'histSummarySpectrum';
+    spectrum.style.position = "relative";
+
+    spectrum.style.background = 'linear-gradient(to right, ' + scrub[unit].color + ', ' + scrub[unit].color2 + ')'
+
+    const rangeBar = document.createElement('div');
+    rangeBar.className = 'histSummaryRangeBar';
+    rangeBar.style.position = 'absolute';
+    rangeBar.style.left = low_location + "%";
+    rangeBar.style.right = (100 - high_location) + "%";
+    spectrum.appendChild(rangeBar)
+
+    const avgBar = document.createElement('div');
+    avgBar.className = 'histSummarySpectrumBar';
+    avgBar.style.position = 'absolute';
+    avgBar.style.left = avg_location + "%";
+    spectrum.appendChild(avgBar)
+
+    unitCell.appendChild(spectrum)
+    unitCell.appendChild(underBar)
+
+    if (isSummable) {
+        const totalComment = document.createElement('p')
+        totalComment.className = 'histSummaryTotal';
+        
+        if (unit == "time" || unit == "elapsedTime") {
+            totalComment.innerHTML = `<b>Cum: </b> ${convert(curr_distribution[id][unit + "_breakdown"].total)} (<b>${((curr_distribution[id][unit + "_breakdown"].total / runningTotals[unit])*100).toFixed(2)}</b>% of total ${scrub[unit].title.toLowerCase()})`
+        } else {
+            totalComment.innerHTML = `<b>Cum: </b> ${(curr_distribution[id][unit + "_breakdown"].total).toFixed(numDecimals)} ${scrub[unit].abbrUnit} (<b>${((curr_distribution[id][unit + "_breakdown"].total / runningTotals[unit])*100).toFixed(2)}</b>% of total ${scrub[unit].title.toLowerCase()})`
+        }
+        
+        unitCell.appendChild(totalComment)
+    }
+    document.getElementById("curr_distribution_info").appendChild(unitCell)
+}
+
+function showStatsOnHTML(id, color, varToHighlight){
+    const elementsToRemove = document.querySelectorAll('.histSummaryCell');
+
+    elementsToRemove.forEach(e => e.remove())
+
+    Object.keys(scrub).forEach((un) => {
+        createHistSummaryCell(un, id, isSummable=scrub[un].summable)
+    })
+
+    console.log(curr_distribution[id])
+
+    //document.getElementById("curr_distribution_total_summary").innerHTML = totalStatString
 
     // remove all rows from the table
     var chartRows = document.getElementById("curr_distribution_wrapper").getElementsByClassName('outerDiv');
@@ -289,6 +469,7 @@ function establishIncrements(item, scrubProperty){
 
 function renderGraph(){
     curr_distribution = []
+    Object.keys(runningTotals).forEach((k) => {runningTotals[k] = 0})
     totalMileage=0;
     totalElevGain=0;
     totalPace=0;
@@ -425,11 +606,6 @@ function hidePercentiles() {
 }
 
 function renderTypeGraph(sortBy){
-    /*
-    if(document.getElementById(type + "_breakdown").getElementsByClassName("percentileSpectrum")[0]) {
-        document.getElementById(type + "_breakdown").getElementsByClassName("percentileSpectrum")[0].remove();
-    }*/
-    
     totalMileage=0;
     totalElevGain=0;
     totalPace=0;
@@ -460,7 +636,6 @@ function renderTypeGraph(sortBy){
     //color is the bar color
     //sortBy is the property in question
 
-    // sort allActivities by property in question
     for (let i = 1; i < allActivities.length; i++) {
         let currentElement = allActivities[i];
         let lastIndex = i - 1;
@@ -532,29 +707,53 @@ function renderTypeGraph(sortBy){
 
     // --> end manual computation for left and right outliers and number of bars.
 
+    // --> end computation of mean
+
     console.log("The total number of bars is: " + scrub[sortBy].totalBars)
 
     for(var i = 0; i < scrub[sortBy].totalBars; i++){
         curr_distribution[i] = {}
         curr_distribution[i].count = 0
-        curr_distribution[i].total_elevation_gain = 0;
-        curr_distribution[i].most_elevation_gain = -1;
-        curr_distribution[i].least_elevation_gain = 2147483687;
-        curr_distribution[i].total_miles = 0;
-        curr_distribution[i].most_miles = -1;
-        curr_distribution[i].least_miles = 2147483687;
-        curr_distribution[i].total_time = 0;
-        curr_distribution[i].most_time = -1;
-        curr_distribution[i].least_time = 2147483647;
-        curr_distribution[i].total_elapsed_time = 0;
-        curr_distribution[i].list_of_activities = [];
+        curr_distribution[i].valueStorageForMedian = []
+        curr_distribution[i].list_of_activities = []
+        summableUnits.forEach((unit) => {
+            curr_distribution[i][unit + "_breakdown"] = {total: 0, high: -1, low: 2147483687}
+        })
+        nonSummableUnits.forEach((unit) => {
+            curr_distribution[i][unit + "_breakdown"] = {weightedTotal: 0, weight: 0, high: -1, low: 2147483687}
+        })
     }
 
     allActivities.forEach(e => {
-        establishIncrements(e, sortBy)
+        if (e[sortBy] != null) {
+            establishIncrements(e, sortBy)
+        }
     })
 
-    console.log(curr_distribution)
+    // compute the percentages of each.
+
+    for (var i = 0; i < scrub[sortBy].totalBars; i++) {
+        Object.keys(scrub).forEach((unit) => {
+            const hi = curr_distribution[i][unit + "_breakdown"].high
+            const lo = curr_distribution[i][unit + "_breakdown"].low
+            const sortedRef = allValuesSorted[unit]
+
+            let hi_ind = 0;
+            let low_ind = 0;
+            while (hi_ind < sortedRef.length && hi >= sortedRef[hi_ind]) {
+                if (lo > sortedRef[hi_ind]) {
+                    low_ind+=1
+                } 
+                hi_ind+=1
+            }
+
+            const hi_percentile = (hi_ind / sortedRef.length)*100
+            const low_percentile = (low_ind / sortedRef.length)*100
+
+            curr_distribution[i][unit + "_breakdown"].high_percent = hi_percentile
+            curr_distribution[i][unit + "_breakdown"].low_percent = low_percentile
+        })
+    }
 
     // create the box and whisker plots
 
@@ -569,7 +768,8 @@ function renderTypeGraph(sortBy){
     }
 
     for (let i = 0; i < percentilesOfInterest.length; i++) {
-        let calculatedPosition = ((allActivities[Math.floor(len*(percentilesOfInterest[i]/100))][sortBy] - minValue) / (maxValue - minValue)) * 100
+        const sortedRef = allValuesSorted[sortBy]
+        let calculatedPosition = ((sortedRef[Math.floor(sortedRef.length*(percentilesOfInterest[i]/100))] - minValue) / (maxValue - minValue)) * 100
         if (calculatedPosition < 0) {
             calculatedPosition = 0;
         }
@@ -611,7 +811,7 @@ function renderTypeGraph(sortBy){
         percentageDisplay.id = 'percentileMarkersDisplay-curr_distribution_' + i;
         percentageDisplay.style.color = percentileDisplayClr;
         percentageDisplay.style.border = "2px solid " + percentileDisplayClr;
-        let val = allActivities[Math.floor(len*(percentilesOfInterest[i]/100))][sortBy]
+        let val = sortedRef[Math.floor(sortedRef.length*(percentilesOfInterest[i]/100))]
         let percentileValue;
 
         if (sortBy == "maxPace" || sortBy == "pace") {
@@ -626,14 +826,15 @@ function renderTypeGraph(sortBy){
         percentageDisplay.style.left = calculatedPosition + "%";
 
         document.getElementById("curr_distribution_spectrum").appendChild(percentageDisplay);
-
     }
+
+    // --> end creation of box/whisker plot
 
     if(curr_distribution != undefined){
         //console.log("curr_distribution is: " + curr_distribution)
         let greatest = -1;
         
-        //get the greatest element in the curr_distribution
+        //get the greatest frequency in the curr_distribution
         for (var j = 0; j< curr_distribution.length; j++){
             if(curr_distribution[j].count > greatest){
                 greatest = curr_distribution[j].count;
@@ -690,7 +891,7 @@ function renderTypeGraph(sortBy){
             document.getElementById("curr_distribution").getElementsByClassName("verticalHolder")[i].appendChild(verticalHolderStat);
 
             //console.log(curr_distribution);
-            totalMileage += curr_distribution[i].total_miles;
+            totalMileage += curr_distribution[i].total_distance;
             totalElevGain +=curr_distribution[i].total_elevation_gain;
             totalMovingTime +=curr_distribution[i].total_time;
             totalElapsedTime +=curr_distribution[i].total_elapsed_time;
@@ -734,21 +935,15 @@ function createRunLookup (id) {
 
     for (let i = 0; i < propertiesToParse.length; i++) {
         // sort all activities and rank them.
-        
+
         if (runObject[propertiesToParse[i].property] != null) {
-            // let allActivitiesWithoutNull = allActivities.map(e => e.)
-            for (let inner = 1; inner < allActivities.length; inner++) {
-                let currentElement = allActivities[inner];
-                let lastIndex = inner - 1;
-            
-                while (lastIndex >= 0 && allActivities[lastIndex][propertiesToParse[i].property] > currentElement[propertiesToParse[i].property]) {
-                    allActivities[lastIndex + 1] = allActivities[lastIndex];
-                    lastIndex--;
-                }
-                allActivities[lastIndex + 1] = currentElement;
+
+            const sortedRef = allValuesSorted[propertiesToParse[i].property]
+            console.log(propertiesToParse[i].property)
+            let j = 0;
+            while (j < sortedRef.length && runObject[propertiesToParse[i].property] > sortedRef[j]) {
+                j += 1
             }
-
-
 
             let rank;
             // calculate ranks
@@ -757,7 +952,7 @@ function createRunLookup (id) {
             } else if (propertiesToParse[i].property == "uptime" && runObject[propertiesToParse[i].property] == 100) {
                 rank = allActivities.length - 1; //last
             } else {
-                rank = allActivities.map(e => e.id).indexOf(id);
+                rank = j
             }
 
             let textColor = "black";
@@ -823,9 +1018,9 @@ function createRunLookup (id) {
             const rankDisplay = document.createElement('p');
             rankDisplay.className = 'runLookupDivRank';
             if (propertiesToParse[i].property === "pace") {
-                rankDisplay.innerHTML = propertiesToParse[i].min + ' than <b>' + (allActivities.length - rank) + "</b> of <b> " + allActivities.length + "</b> runs" + " (" + (((allActivities.length - rank)  / allActivities.length)*100).toFixed(2) + "%)";
+                rankDisplay.innerHTML = propertiesToParse[i].min + ' than <b>' + (sortedRef.length - rank) + "</b> of <b> " + sortedRef.length + "</b> runs" + " (" + (((sortedRef.length - rank)  / allActivities.length)*100).toFixed(2) + "%)";
             } else {
-                rankDisplay.innerHTML = propertiesToParse[i].max + ' than <b>' + rank + "</b> of <b> " + allActivities.length + "</b> runs" + " (" + ((rank / allActivities.length)*100).toFixed(2) + "%)";
+                rankDisplay.innerHTML = propertiesToParse[i].max + ' than <b>' + rank + "</b> of <b> " + sortedRef.length + "</b> runs" + " (" + ((rank / sortedRef.length)*100).toFixed(2) + "%)";
             }
 
             statDiv.appendChild(rankDisplay);

@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mulish:ital,wght@0,200..1000;1,200..1000&family=National+Park:wght@200..800&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="css/visualize.css">
+    <link rel="stylesheet" href="css/runlookup.css">
     <link rel="stylesheet" href="css/notloggedin.css">
     <link rel="stylesheet" href="css/summary.css">
     <link rel="stylesheet" href="css/trends.css">
@@ -146,7 +147,9 @@
                     <div class = "infoWrapper" id = "curr_distribution_wrapper">
                         <div class = "infoWrapperLeft">
                             <p id = "curr_distribution_counter" class = "counterDisplay"><span></span> runs with <span></span> <span></span></p>
-                            <p id = "curr_distribution_info" class = "info"></p>
+                            <div id = "curr_distribution_info" class = "info">
+                                
+                            </div>
                         </div>
                         <div class = "infoWrapperRight"></div>
                     </div>
@@ -567,6 +570,8 @@
                 </div>
                 <button onclick="analyzeTitles()">Run title analysis</button>
                 <button onclick="combine()">Run kudo analysis (don't click)</button>
+                <p id="kudoGraphDiv"></p>
+                <p id = "kudoGraphSummary"></p>
             </section>
         </div>
     </div>
